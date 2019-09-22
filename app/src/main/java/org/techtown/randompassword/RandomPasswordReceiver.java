@@ -1,8 +1,11 @@
 package org.techtown.randompassword;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 
 import java.security.SecureRandom;
@@ -10,11 +13,10 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RanPassword extends BroadcastReceiver {
+public class RandomPasswordReceiver extends BroadcastReceiver {
 
     @Override
-    public void onReceive(Context context, Intent intent) {
-        String pwd;
+    public void onReceive(Context context, Intent intent) {String pwd;
         while(true) {
             pwd = getRandomPassword(9);
             Pattern pattern = Pattern.compile("((?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%=+]).{9,})");    //  정규식
@@ -32,6 +34,18 @@ public class RanPassword extends BroadcastReceiver {
 
         showIntent.putExtra("pwd", pwd);
         context.startActivity(showIntent);
+
+        Intent timeIntent = new Intent(context, TimeReceiver.class);
+        PendingIntent timePendIntent = PendingIntent.getBroadcast(context, 0, timeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)    //  API 19이상 23미만
+                am.setExact(AlarmManager.RTC, 0, timePendIntent);
+            else    //  API 19미만
+                am.set(AlarmManager.RTC, 0, timePendIntent);
+        } else
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC, 0, timePendIntent);
     }
 
     public String getRandomPassword(int length) {

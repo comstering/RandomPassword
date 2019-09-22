@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("Button", "push");
-                Intent intent = new Intent(getApplicationContext(), RanPassword.class);
+                Intent intent = new Intent(getApplicationContext(), RandomPasswordReceiver.class);
                 AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
                 PendingIntent pwdIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);
                 if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
