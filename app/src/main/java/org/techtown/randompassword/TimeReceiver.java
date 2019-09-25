@@ -17,10 +17,10 @@ public class TimeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        Intent pwdIntent = new Intent(context, RandomPasswordReceiver.class);
+        Intent pwdIntent = new Intent(context, ServiceReceiver.class);
         PendingIntent pwdPendIntent = PendingIntent.getBroadcast(context, 0, pwdIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         Random random = new SecureRandom();
-        int addTime = (random.nextInt(10) + 1);
+        int addTime = (random.nextInt(5) + 1);
         Calendar calendar = Calendar.getInstance();
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), calendar.get(Calendar.HOUR), calendar.get(Calendar.MINUTE) + addTime, 0);
         Log.d("addTime", addTime + "분");
@@ -30,7 +30,7 @@ public class TimeReceiver extends BroadcastReceiver {
                 alarmManager.setExact(AlarmManager.RTC, calendar.getTimeInMillis(), pwdPendIntent);
             else    //  API 19미만
                 alarmManager.set(AlarmManager.RTC, calendar.getTimeInMillis(), pwdPendIntent);
-        } else
+        } else    //  API 23 이상
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, calendar.getTimeInMillis(), pwdPendIntent);
     }
 }

@@ -9,8 +9,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ShowPwdActivity" />
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -18,15 +16,37 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <receiver
-            android:name=".RandomPasswordReceiver"
+            android:name=".ServiceReceiver"
             android:enabled="true"
             android:exported="true"></receiver>
 
         <receiver
+            android:name=".RebootReciver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver
             android:name=".TimeReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
+            android:name=".RestartService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".RandomPasswordService"
             android:enabled="true"
             android:exported="true" />
     </application>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
 </manifest>
