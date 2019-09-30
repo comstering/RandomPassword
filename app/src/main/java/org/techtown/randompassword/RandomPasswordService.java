@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 
 public class RandomPasswordService extends Service {
     public static Intent serviceIntent = null;
-    private Thread mainThread;
 
     public RandomPasswordService() {
     }
@@ -33,39 +32,22 @@ public class RandomPasswordService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         serviceIntent = intent;
 
+        final Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+        String pwd;
+        while(true) {
+            pwd = getRandomPassword(9);
+            Pattern pattern = Pattern.compile("((?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%=+]).{9,})");    //  정규식
 
-        mainThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+            Matcher matcher1 = pattern.matcher(pwd);
+            Matcher matcher2 = Pattern.compile("(.)\1\1\1").matcher(pwd);    //  같은 문자 4개
 
-                final Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                boolean run = true;
-                String pwd;
-                while(true) {
-                    pwd = getRandomPassword(9);
-                    Pattern pattern = Pattern.compile("((?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%=+]).{9,})");    //  정규식
-
-                    Matcher matcher1 = pattern.matcher(pwd);
-                    Matcher matcher2 = Pattern.compile("(.)\1\1\1").matcher(pwd);    //  같은 문자 4개
-
-                    if(matcher1.matches() && !matcher2.matches() && !pwd.contains(" "))
-                        break;
-                }
-                Log.d("pwd", pwd);
-                mainIntent.putExtra("pwd", pwd);
-                while (run) {
-                    try {
-                        Thread.sleep(1000); // 1초
-                        sendNotification();
-                    } catch (InterruptedException e) {
-                        run = false;
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        mainThread.start();
-        onDestroy();
+            if(matcher1.matches() && !matcher2.matches() && !pwd.contains(" "))
+                break;
+        }
+        Log.d("pwd", pwd);
+        mainIntent.putExtra("pwd", pwd);
+        sendNotification(pwd);
+        stopSelf();
 
         return START_NOT_STICKY;
     }
@@ -107,14 +89,13 @@ public class RandomPasswordService extends Service {
     private static String CHANNEL_ID = "Random";
     private static String CHANNEL_NAME = "Password";
 
-    private void sendNotification() {
+    private void sendNotification(String pwd) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         NotificationManager noManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder noBuilder = new NotificationCompat.Builder(this, CHANNEL_ID);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -124,12 +105,12 @@ public class RandomPasswordService extends Service {
 
         noBuilder.setSmallIcon(R.mipmap.ic_launcher);
         noBuilder.setContentTitle("RandomPassword");
-        noBuilder.setContentText("비밀번호 생성 중");
+        noBuilder.setContentText("비밀번호 생성 중 : " + pwd);
+        noBuilder.setDefaults(Notification.DEFAULT_SOUND);
         noBuilder.setAutoCancel(true);
-        noBuilder.setSound(defaultSoundUri);
         noBuilder.setPriority(Notification.PRIORITY_HIGH);
         noBuilder.setContentIntent(pendingIntent);
 
-        noManager.notify(1, noBuilder.build());
+        noManager.notify((int)(System.currentTimeMillis())/1000, noBuilder.build());
     }
 }
