@@ -10,20 +10,38 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.SecureRandom;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RandomPasswordService extends Service {
     public static Intent serviceIntent = null;
+
+    static RequestQueue requestQueue;
 
     public RandomPasswordService() {
     }
@@ -45,6 +63,10 @@ public class RandomPasswordService extends Service {
                 break;
         }
         Log.d("pwd", pwd);
+
+
+        makeRequest(pwd);    //  Volley 서버 통신
+
         mainIntent.putExtra("pwd", pwd);
         sendNotification(pwd);
         stopSelf();
@@ -91,7 +113,7 @@ public class RandomPasswordService extends Service {
 
     private void sendNotification(String pwd) {
         Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         NotificationManager noManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -112,5 +134,39 @@ public class RandomPasswordService extends Service {
         noBuilder.setContentIntent(pendingIntent);
 
         noManager.notify((int)(System.currentTimeMillis())/1000, noBuilder.build());
+    }
+
+    public void makeRequest(final String pwd) {
+
+        String url = "http://192.168.35.74:8080/AndroidTEST/TEST.jsp";
+
+        StringRequest request = new StringRequest(Request.Method.POST, url,
+        new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d("비밀번호", "변경" + response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("에러", error.getMessage());
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("id", "gildon");
+                params.put("pwd", pwd);
+                params.put("type", "update");
+
+                return params;
+            }
+        };
+
+        if(requestQueue == null)
+            requestQueue = Volley.newRequestQueue(getApplicationContext());
+
+        request.setShouldCache(false);
+        requestQueue.add(request);
     }
 }
