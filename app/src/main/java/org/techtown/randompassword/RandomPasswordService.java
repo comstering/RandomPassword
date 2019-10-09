@@ -8,9 +8,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.AsyncTask;
+
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -25,12 +24,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+
 import java.security.SecureRandom;
+
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,8 +60,10 @@ public class RandomPasswordService extends Service {
         }
         Log.d("pwd", pwd);
 
+        SharedPreferences sf = getSharedPreferences("user", MODE_PRIVATE);
+        String id = sf.getString("id", "");
 
-        makeRequest(pwd);    //  Volley 서버 통신
+        makeRequest(id, pwd);    //  Volley 서버 통신
 
         mainIntent.putExtra("pwd", pwd);
         sendNotification(pwd);
@@ -76,8 +74,8 @@ public class RandomPasswordService extends Service {
 
     public String getRandomPassword(int length) {
         char[] charaters = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r',
-                's','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','C','K','L',
-                'M','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9','!','@','#','$','%','=','+'};
+                's','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J', 'K','L',
+                'M', 'N', 'O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9','!','@','#','$','%','=','+'};
         StringBuilder sb = new StringBuilder("");
         Random rn = new SecureRandom();
         for(int i = 0; i < length; i++) {
@@ -136,12 +134,10 @@ public class RandomPasswordService extends Service {
         noManager.notify((int)(System.currentTimeMillis())/1000, noBuilder.build());
     }
 
-    public void makeRequest(final String pwd) {
-
+    public void makeRequest(final String id, final String pwd) {
         String url = "http://192.168.35.74:8080/AndroidTEST/TEST.jsp";
 
-        StringRequest request = new StringRequest(Request.Method.POST, url,
-        new Response.Listener<String>() {
+        StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.d("비밀번호", "변경" + response);
@@ -155,7 +151,7 @@ public class RandomPasswordService extends Service {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
-                params.put("id", "gildon");
+                params.put("id", id);
                 params.put("pwd", pwd);
                 params.put("type", "update");
 
