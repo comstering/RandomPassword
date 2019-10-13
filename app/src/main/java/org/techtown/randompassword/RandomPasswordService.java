@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 public class RandomPasswordService extends Service {
     public static Intent serviceIntent = null;
 
-    static RequestQueue requestQueue;
+    static RequestQueue requestQueue;    //  비밀번호 변경 리퀘스트
 
     public RandomPasswordService() {
     }
@@ -48,9 +48,9 @@ public class RandomPasswordService extends Service {
 
         final Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
         String pwd;
-        while(true) {
-            pwd = getRandomPassword(9);
-            Pattern pattern = Pattern.compile("((?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%=+]).{9,})");    //  정규식
+        while(true) {    //  비밀번호 만들기
+            pwd = getRandomPassword(10);
+            Pattern pattern = Pattern.compile("((?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%=+]).{10,})");    //  정규식
 
             Matcher matcher1 = pattern.matcher(pwd);
             Matcher matcher2 = Pattern.compile("(.)\1\1\1").matcher(pwd);    //  같은 문자 4개
@@ -72,7 +72,7 @@ public class RandomPasswordService extends Service {
         return START_NOT_STICKY;
     }
 
-    public String getRandomPassword(int length) {
+    public String getRandomPassword(int length) {    //  비밀번호 가능 문자열 만들기
         char[] charaters = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r',
                 's','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J', 'K','L',
                 'M', 'N', 'O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9','!','@','#','$','%','=','+'};
@@ -134,7 +134,7 @@ public class RandomPasswordService extends Service {
         noManager.notify((int)(System.currentTimeMillis())/1000, noBuilder.build());
     }
 
-    public void makeRequest(final String id, final String pwd) {
+    public void makeRequest(final String id, final String pwd) {    //  서버 비밀번호 변경 리퀘스트
         String url = "http://192.168.35.74:8080/AndroidTEST/TEST.jsp";
 
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {

@@ -1,6 +1,7 @@
 package org.techtown.randompassword;
 
-
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,6 +10,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -28,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     EditText editText;
     EditText editText2;
+    TextView textView;
 
     static RequestQueue loginRequestQueue;    //  로그인 리퀘스트
     static RequestQueue findPWRequestQueue;    //  패스워드 확인 리퀘스트
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         editText = findViewById(R.id.editText);
         editText2 = findViewById(R.id.editText2);
+        textView = findViewById(R.id.textView);
 
         Button button = findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
@@ -87,25 +92,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void loginRequest(final String id, final String pwd) {
+    public void loginRequest(final String id, final String pwd) {    //  로그인 리퀘스트
         String url = "http://192.168.35.74:8080/AndroidTEST/TEST.jsp";
 
         final Intent loginIntent = new Intent(getApplicationContext(),LoginActivity.class);
-        loginIntent.putExtra("id", id);
 
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.d("로그인", response);
 
-                if(response.equals("true"))
-                    loginIntent.putExtra("ment", "님 환영합니다.");
+                if(response.equals("true")) {
+                    loginIntent.putExtra("id", id);
+                    startActivityForResult(loginIntent, 101);
+                }
                 else if(response.equals("false"))
-                    loginIntent.putExtra("ment", "님 패스워드가 틀렸습니다.");
+                    Toast.makeText(getApplicationContext(),"패스워드가 틀렸습니다.", Toast.LENGTH_LONG).show();
                 else
-                    loginIntent.putExtra("ment", "아이디가 존재하지 않습니다.");
+                    Toast.makeText(getApplicationContext(), "아이디가 존재하지 않습니다.", Toast.LENGTH_LONG).show();
 
-                startActivityForResult(loginIntent, 101);
+
             }
         }, new Response.ErrorListener() {
             @Override
@@ -132,17 +138,20 @@ public class MainActivity extends AppCompatActivity {
         loginRequestQueue.add(request);
     }
 
-    public void findPWRequest(final String id) {
+    public void findPWRequest(final String id) {    //  비밀번호 get 리퀘스트
         String url = "http://192.168.35.74:8080/AndroidTEST/TEST.jsp";
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 if(response.equals("noID")){
-
+                    Toast.makeText(getApplicationContext(), "존재하지 않는 아이디 입니다.", Toast.LENGTH_LONG).show();
                 } else if(response.equals("error")) {
-
-                } else
+                    Toast.makeText(getApplicationContext(), "에러", Toast.LENGTH_LONG).show();
+                } else {
                     editText2.setText(response);
+                    textView.setText(response);
+                    Toast.makeText(getApplicationContext(), "비밀번호를 가져왔습니다.", Toast.LENGTH_LONG).show();
+                }
             }
         }, new Response.ErrorListener() {
             @Override

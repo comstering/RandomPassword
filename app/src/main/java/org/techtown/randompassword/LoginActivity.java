@@ -19,7 +19,7 @@ public class LoginActivity extends AppCompatActivity {
 
         if(intent != null) {
             if(intent != null) {
-                textView.setText(intent.getStringExtra("id") + intent.getStringExtra("ment"));
+                textView.setText(intent.getStringExtra("id") + "님 환영합니다.");
             }
         }
 
