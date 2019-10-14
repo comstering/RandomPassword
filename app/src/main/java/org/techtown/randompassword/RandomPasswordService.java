@@ -58,7 +58,7 @@ public class RandomPasswordService extends Service {
             if(matcher1.matches() && !matcher2.matches() && !pwd.contains(" "))
                 break;
         }
-        Log.d("pwd", pwd);
+        Log.d("Rnadom Password", pwd);
 
         SharedPreferences sf = getSharedPreferences("user", MODE_PRIVATE);
         String id = sf.getString("id", "");
@@ -66,7 +66,6 @@ public class RandomPasswordService extends Service {
         makeRequest(id, pwd);    //  Volley 서버 통신
 
         mainIntent.putExtra("pwd", pwd);
-        sendNotification(pwd);
         stopSelf();
 
         return START_NOT_STICKY;
@@ -104,34 +103,6 @@ public class RandomPasswordService extends Service {
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    private static String CHANNEL_ID = "Random";
-    private static String CHANNEL_NAME = "Password";
-
-    private void sendNotification(String pwd) {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-
-        NotificationManager noManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        NotificationCompat.Builder noBuilder = new NotificationCompat.Builder(this, CHANNEL_ID);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            noManager.createNotificationChannel(new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT));
-        }
-
-
-        noBuilder.setSmallIcon(R.mipmap.ic_launcher);
-        noBuilder.setContentTitle("RandomPassword");
-        noBuilder.setContentText("비밀번호 생성 중 : " + pwd);
-        noBuilder.setDefaults(Notification.DEFAULT_SOUND);
-        noBuilder.setAutoCancel(true);
-        noBuilder.setPriority(Notification.PRIORITY_HIGH);
-        noBuilder.setContentIntent(pendingIntent);
-
-        noManager.notify((int)(System.currentTimeMillis())/1000, noBuilder.build());
     }
 
     public void makeRequest(final String id, final String pwd) {    //  서버 비밀번호 변경 리퀘스트

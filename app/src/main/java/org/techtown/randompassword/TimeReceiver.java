@@ -23,7 +23,7 @@ public class TimeReceiver extends BroadcastReceiver {
         int addTime = (random.nextInt(5) + 1);
         Calendar calendar = Calendar.getInstance();
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), calendar.get(Calendar.HOUR), calendar.get(Calendar.MINUTE) + addTime, 0);
-        Log.d("addTime", addTime + "분");
+        Log.d("Security Seed", addTime + "");
 
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)    //  API 19이상 23미만
