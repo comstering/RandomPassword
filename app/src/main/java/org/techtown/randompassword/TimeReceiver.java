@@ -17,10 +17,12 @@ public class TimeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+
         Intent pwdIntent = new Intent(context, ServiceReceiver.class);
-        PendingIntent pwdPendIntent = PendingIntent.getBroadcast(context, 0, pwdIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pwdPendIntent = PendingIntent.getBroadcast(context, 0, pwdIntent, 0);
         Random random = new SecureRandom();
         int addTime = (random.nextInt(5) + 1);
+        //  변환 시간 추출
         Calendar calendar = Calendar.getInstance();
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), calendar.get(Calendar.HOUR), calendar.get(Calendar.MINUTE) + addTime, 0);
         Log.d("Security Seed", addTime + "");

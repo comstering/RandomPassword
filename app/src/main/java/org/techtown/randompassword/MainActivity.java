@@ -1,12 +1,8 @@
 package org.techtown.randompassword;
 
-import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -27,77 +23,60 @@ import com.android.volley.toolbox.Volley;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
-    private Intent serviceIntent;
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    EditText editText;
-    EditText editText2;
-    TextView textView;
+    private EditText idEditText;    //  id입력창
+    private EditText pwEditText;    //  pw입력창
+    private TextView textView;    //  pw 보이는 textView
 
-    static RequestQueue loginRequestQueue;    //  로그인 리퀘스트
-    static RequestQueue findPWRequestQueue;    //  패스워드 확인 리퀘스트
+    private Button loginButton, joinButton, findPwButton;
+
+    private static RequestQueue RequestQueue;    //  Volley 리퀘스트
+
+    private void inIt() {
+        idEditText = findViewById(R.id.idEditText);
+        pwEditText = findViewById(R.id.pwEditText);
+        textView = findViewById(R.id.textView);
+        loginButton = findViewById(R.id.loginButton);
+        joinButton = findViewById(R.id.joinButton);
+        findPwButton = findViewById(R.id.findPwButton);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch(v.getId()) {
+            case R.id.loginButton:    //  로그인 버튼
+                String login_id = idEditText.getText().toString();
+                String login_pwd = pwEditText.getText().toString();
+                loginRequest(login_id, login_pwd);
+                break;
+            case R.id.joinButton:    //  회원가입 버튼
+                Intent joinIntent = new Intent(getApplicationContext(), JoinActivity.class);
+                startActivity(joinIntent);
+                finish();
+                break;
+            case R.id.findPwButton:    //  비밀번호 get 버튼
+                SharedPreferences sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
+                String find_id = sharedPreferences.getString("id", "");
+                findPWRequest(find_id);
+                break;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        PowerManager pm = (PowerManager) getApplicationContext().getSystemService(POWER_SERVICE);
-        boolean isWhiteListing = false;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            isWhiteListing = pm.isIgnoringBatteryOptimizations(getApplicationContext().getPackageName());
-        }
-        if (!isWhiteListing) {
-            Intent intent = new Intent();
-            intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            intent.setData(Uri.parse("package:" + getApplicationContext().getPackageName()));
-            startActivity(intent);
-        }
+        inIt();    //  초기화
 
-        if (RandomPasswordService.serviceIntent==null) {
-            serviceIntent = new Intent(this, RandomPasswordService.class);
-            startService(serviceIntent);
-        } else
-            serviceIntent = RandomPasswordService.serviceIntent;
-
-        editText = findViewById(R.id.editText);
-        editText2 = findViewById(R.id.editText2);
-        textView = findViewById(R.id.textView);
-
-        Button button = findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String id = editText.getText().toString();
-                String pwd = editText2.getText().toString();
-                loginRequest(id, pwd);
-            }
-        });
-
-        Button button2 = findViewById(R.id.button2);
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent joinIntent = new Intent(getApplicationContext(), JoinActivity.class);
-                startActivityForResult(joinIntent, 101);
-            }
-        });
-
-        Button button3 = findViewById(R.id.button3);
-        button3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SharedPreferences sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
-                String id = sharedPreferences.getString("id","");
-                findPWRequest(id);
-            }
-        });
+        loginButton.setOnClickListener(this);
+        joinButton.setOnClickListener(this);
+        findPwButton.setOnClickListener(this);
     }
 
-    public void loginRequest(final String id, final String pwd) {    //  로그인 리퀘스트
-        String url = "http://192.168.35.74:8080/AndroidTEST/TEST.jsp";
-
-        final Intent loginIntent = new Intent(getApplicationContext(),LoginActivity.class);
+    private void loginRequest(final String id, final String pwd) {    //  로그인 리퀘스트
+        String url = "http://222.236.93.13:8080/AndroidTEST/TEST.jsp";
 
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -105,21 +84,19 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("로그인", response);
 
                 if(response.equals("true")) {
+                    Intent loginIntent = new Intent(getApplicationContext(),LoginActivity.class);
                     loginIntent.putExtra("id", id);
-                    startActivityForResult(loginIntent, 101);
+                    startActivity(loginIntent);
                 }
                 else if(response.equals("false"))
                     Toast.makeText(getApplicationContext(),"패스워드가 틀렸습니다.", Toast.LENGTH_LONG).show();
                 else
                     Toast.makeText(getApplicationContext(), "아이디가 존재하지 않습니다.", Toast.LENGTH_LONG).show();
-
-
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d("로그인", error.getMessage());
-                startActivityForResult(loginIntent, 101);
             }
         }) {
             @Override
@@ -133,15 +110,15 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        if(loginRequestQueue == null)
-            loginRequestQueue = Volley.newRequestQueue(getApplicationContext());
+        if(RequestQueue == null)
+            RequestQueue = Volley.newRequestQueue(getApplicationContext());
 
         request.setShouldCache(false);
-        loginRequestQueue.add(request);
+        RequestQueue.add(request);
     }
 
-    public void findPWRequest(final String id) {    //  비밀번호 get 리퀘스트
-        String url = "http://192.168.35.74:8080/AndroidTEST/TEST.jsp";
+    private void findPWRequest(final String id) {    //  비밀번호 get 리퀘스트
+        String url = "http://222.236.93.13:8080/AndroidTEST/TEST.jsp";
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -150,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if(response.equals("error")) {
                     Toast.makeText(getApplicationContext(), "에러", Toast.LENGTH_LONG).show();
                 } else {
-                    editText2.setText(response);
+                    pwEditText.setText(response);
                     textView.setText(response);
                     Toast.makeText(getApplicationContext(), "비밀번호를 가져왔습니다.", Toast.LENGTH_LONG).show();
                 }
@@ -158,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                Log.d("find", error.getMessage());
             }
         }) {
             @Override
@@ -171,10 +148,10 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        if(findPWRequestQueue == null)
-            findPWRequestQueue = Volley.newRequestQueue(getApplicationContext());
+        if(RequestQueue == null)
+            RequestQueue = Volley.newRequestQueue(getApplicationContext());
 
         request.setShouldCache(false);
-        findPWRequestQueue.add(request);
+        RequestQueue.add(request);
     }
 }

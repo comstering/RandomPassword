@@ -22,7 +22,7 @@
             android:gravity="center">
 
             <EditText
-                android:id="@+id/editText"
+                android:id="@+id/idEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -30,7 +30,7 @@
                 android:inputType="textPersonName" />
 
             <EditText
-                android:id="@+id/editText2"
+                android:id="@+id/pwEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -38,7 +38,7 @@
                 android:inputType="textPassword" />
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/findPwButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="비밀번호 확인" />
@@ -60,13 +60,13 @@
             android:gravity="center">
 
             <Button
-                android:id="@+id/button"
+                android:id="@+id/loginButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="로그인" />
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/joinButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="회원가입" />

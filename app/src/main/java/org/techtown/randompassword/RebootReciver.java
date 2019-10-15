@@ -9,9 +9,8 @@ public class RebootReciver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            context.startForegroundService(new Intent(context, RestartService.class));
-        else
-            context.startService(new Intent(context, RandomPasswordService.class));
+        if(intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
+                context.startService(new Intent(context, RandomPasswordService.class));
+        }
     }
 }

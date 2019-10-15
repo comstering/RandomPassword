@@ -15,7 +15,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".LoginActivity"></activity>
+        <receiver
+            android:name=".ServiceReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
+
+        <activity android:name=".LoginActivity" />
         <activity android:name=".JoinActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -25,10 +30,6 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".ServiceReceiver"
-            android:enabled="true"
-            android:exported="false" />
         <receiver
             android:name=".RebootReciver"
             android:enabled="true"
@@ -42,10 +43,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <service
-            android:name=".RestartService"
-            android:enabled="true"
-            android:exported="false" />
         <service
             android:name=".RandomPasswordService"
             android:enabled="true"
