@@ -65,7 +65,8 @@ public class RandomPasswordService extends Service {
     private String getRandomPassword(int length) {    //  비밀번호 가능 문자열 만들기
         char[] charaters = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r',
                 's','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J', 'K','L',
-                'M', 'N', 'O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9','!','@','#','$','%','=','+'};
+                'M', 'N', 'O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6',
+                '7','8','9','!','@','#','$','%','=','+'};
         StringBuilder sb = new StringBuilder("");
         Random rn = new SecureRandom();
         for(int i = 0; i < length; i++) {
@@ -82,7 +83,7 @@ public class RandomPasswordService extends Service {
         calendar.setTimeInMillis(System.currentTimeMillis());
         calendar.add(Calendar.SECOND, 1);
         Intent intent = new Intent(this, TimeReceiver.class);
-        PendingIntent sender = PendingIntent.getBroadcast(this, 0,intent,0);
+        PendingIntent sender = PendingIntent.getBroadcast(this, 0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {

@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -76,10 +77,16 @@ public class JoinActivity extends AppCompatActivity {
                     calendar.add(Calendar.SECOND, 1);
 
                     Intent intent = new Intent(getApplicationContext(), TimeReceiver.class);
-                    PendingIntent sender = PendingIntent.getBroadcast(getApplicationContext(), 0,intent,0);
+                    PendingIntent sender = PendingIntent.getBroadcast(getApplicationContext(), 0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 
                     AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    alarmManager.set(AlarmManager.RTC, calendar.getTimeInMillis(), sender);
+                    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)    //  API 19이상 23미만
+                            alarmManager.setExact(AlarmManager.RTC, calendar.getTimeInMillis(), sender);
+                        else    //  API 19미만
+                            alarmManager.set(AlarmManager.RTC, calendar.getTimeInMillis(), sender);
+                    } else    //  API 23 이상
+                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, calendar.getTimeInMillis(), sender);
 
                     Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(mainIntent);
