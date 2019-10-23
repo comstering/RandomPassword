@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void loginRequest(final String id, final String pwd) {    //  로그인 리퀘스트
-        String url = "http://222.236.93.13:8080/AndroidTEST/TEST.jsp";
+        String url = "http://222.236.93.13:8080/RandomPassword/PhoneConnection.jsp";
 
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void findPWRequest(final String id) {    //  비밀번호 get 리퀘스트
-        String url = "http://222.236.93.13:8080/AndroidTEST/TEST.jsp";
+        String url = "http://222.236.93.13:8080/RandomPassword/PhoneConnection.jsp";
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {

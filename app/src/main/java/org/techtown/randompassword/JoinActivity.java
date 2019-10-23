@@ -59,7 +59,7 @@ public class JoinActivity extends AppCompatActivity {
     }
 
     public void makeRequest(final String id, final String pwd) {
-        String url = "http://222.236.93.13:8080/AndroidTEST/TEST.jsp";
+        String url = "http://222.236.93.13:8080/RandomPassword/PhoneConnection.jsp";
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
