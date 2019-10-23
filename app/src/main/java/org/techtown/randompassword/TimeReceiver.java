@@ -19,7 +19,7 @@ public class TimeReceiver extends BroadcastReceiver {
         Intent pwdIntent = new Intent(context, ServiceReceiver.class);
         PendingIntent pwdPendIntent = PendingIntent.getBroadcast(context, 0, pwdIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         Random random = new SecureRandom();
-        int addTime = (random.nextInt(5) + 1);
+        int addTime = (random.nextInt(60) + 1);
         //  변환 시간 추출
         Calendar calendar = Calendar.getInstance();
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE),
