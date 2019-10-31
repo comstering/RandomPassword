@@ -98,11 +98,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent joinIntent = new Intent(getApplicationContext(), JoinActivity.class);
                 startActivity(joinIntent);
                 break;
-            /*case R.id.findPwButton:    //  비밀번호 get 버튼
-                SharedPreferences sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
-                String find_id = sharedPreferences.getString("id", "");
-                findPWRequest(find_id);
-                break;*/
         }
     }
 
@@ -118,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         loginButton.setOnClickListener(this);
         joinButton.setOnClickListener(this);
-        //findPwButton.setOnClickListener(this);
     }
 
     private void loginRequest(final String id, final String pwd) {    //  로그인 리퀘스트
@@ -320,14 +314,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onClick(View view) {
 
             if (initCipher(mCipher, mKeyName)) {
-                FingerPrintDialog fragment = new FingerPrintDialog();
-                fragment.setCryptoObject(new FingerprintManager.CryptoObject(mCipher));
-                fragment.setStage(FingerPrintDialog.Stage.FINGERPRINT);
-                fragment.show(getFragmentManager(), DIALOG_FRAGMENT_TAG);
-
                 SharedPreferences sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
                 String find_id = sharedPreferences.getString("id", "");
-                findPWRequest(find_id);
+                if(find_id.equalsIgnoreCase("")||find_id.length()==0)
+                    Toast.makeText(getApplicationContext(), "회원가입이 되어있지 않습니다.", Toast.LENGTH_LONG).show();
+                else {
+                    FingerPrintDialog fragment = new FingerPrintDialog();
+                    fragment.setCryptoObject(new FingerprintManager.CryptoObject(mCipher));
+                    fragment.setStage(FingerPrintDialog.Stage.FINGERPRINT);
+                    fragment.show(getFragmentManager(), DIALOG_FRAGMENT_TAG);
+
+                    findPWRequest(find_id);
+                }
             } else {
                 FingerPrintDialog fragment
                         = new FingerPrintDialog();
