@@ -10,4 +10,5 @@
     <string name="fingerprint_not_recognized">등록된 지문이 아닙니다</string>
     <string name="fingerprint_success">지문인식을 완료하였습니다</string>
     <string name="use_fingerprint_to_authenticate_key" >use_fingerprint_to_authenticate_key</string>
+    <string name="description_fingerprint_icon">Fingerprint icon</string>
 </resources>
