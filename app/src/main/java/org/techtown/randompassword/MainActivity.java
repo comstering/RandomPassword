@@ -1,8 +1,15 @@
 package org.techtown.randompassword;
 
+import android.app.KeyguardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.hardware.fingerprint.FingerprintManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyPermanentlyInvalidatedException;
+import android.security.keystore.KeyProperties;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -10,6 +17,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.AuthFailureError;
@@ -20,10 +29,46 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
+@RequiresApi(api = Build.VERSION_CODES.M)
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+
+    /*지문인식 start*/
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+    private static final String DIALOG_FRAGMENT_TAG = "myFragment";
+    private static final String SECRET_MESSAGE = "Very secret message";
+    private static final String KEY_NAME_NOT_INVALIDATED = "key_not_invalidated";
+    static final String DEFAULT_KEY_NAME = "default_key";
+
+    private KeyStore mKeyStore;
+    private KeyGenerator mKeyGenerator;
+    private SharedPreferences mSharedPreferences;
+
+    private Cipher defaultCipher;
+    private Cipher cipherNotInvalidated;
+
+    private KeyguardManager keyguardManager;
+    private FingerprintManager fingerprintManager;
+    /*지문인식 end*/
 
     private EditText idEditText;    //  id입력창
     private EditText pwEditText;    //  pw입력창
@@ -41,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         joinButton = findViewById(R.id.joinButton);
         findPwButton = findViewById(R.id.findPwButton);
     }
-
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
@@ -53,13 +97,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.joinButton:    //  회원가입 버튼
                 Intent joinIntent = new Intent(getApplicationContext(), JoinActivity.class);
                 startActivity(joinIntent);
-                finish();
                 break;
-            case R.id.findPwButton:    //  비밀번호 get 버튼
+            /*case R.id.findPwButton:    //  비밀번호 get 버튼
                 SharedPreferences sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
                 String find_id = sharedPreferences.getString("id", "");
                 findPWRequest(find_id);
-                break;
+                break;*/
         }
     }
 
@@ -69,10 +112,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         inIt();    //  초기화
+        textView.setVisibility(View.GONE);
+
+        fingerprint();
 
         loginButton.setOnClickListener(this);
         joinButton.setOnClickListener(this);
-        findPwButton.setOnClickListener(this);
+        //findPwButton.setOnClickListener(this);
     }
 
     private void loginRequest(final String id, final String pwd) {    //  로그인 리퀘스트
@@ -129,7 +175,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     pwEditText.setText(response);
                     textView.setText(response);
-                    Toast.makeText(getApplicationContext(), "비밀번호를 가져왔습니다.", Toast.LENGTH_LONG).show();
                 }
             }
         }, new Response.ErrorListener() {
@@ -153,5 +198,144 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         request.setShouldCache(false);
         RequestQueue.add(request);
+    }
+
+    public void fingerprint() {
+        try {
+            mKeyStore = KeyStore.getInstance("AndroidKeyStore");
+        } catch (KeyStoreException e) {
+            throw new RuntimeException("Failed to get an instance of KeyStore", e);
+        }
+
+        try {
+            mKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+        } catch(NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new RuntimeException("Failed to get an instance of KeyGenerator", e);
+        }
+
+        try {
+            defaultCipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
+                + KeyProperties.BLOCK_MODE_CBC + "/"
+                + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+            cipherNotInvalidated = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
+                + KeyProperties.BLOCK_MODE_CBC + "/"
+                + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+        } catch(NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException("Failed to get an instance of Cipher", e);
+        }
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        keyguardManager = getSystemService(KeyguardManager.class);
+        fingerprintManager = getSystemService(FingerprintManager.class);
+
+        if(!keyguardManager.isKeyguardSecure()) {
+            Toast.makeText(this, "디바이스에 지문을 등록해 주세요.", Toast.LENGTH_LONG).show();
+            findPwButton.setEnabled(false);
+            return;
+        }
+
+        if(!fingerprintManager.hasEnrolledFingerprints()) {
+            Toast.makeText(this, "디바이스에 지문을 등록해 주세요.", Toast.LENGTH_LONG).show();
+            findPwButton.setEnabled(false);
+            return;
+        }
+
+        createKey(DEFAULT_KEY_NAME, true);
+        createKey(KEY_NAME_NOT_INVALIDATED, false);
+        findPwButton.setEnabled(true);
+        findPwButton.setOnClickListener(new PurchaseButtonClickListener(defaultCipher, DEFAULT_KEY_NAME));    //  비밀번호 get 버튼
+    }
+
+    public void createKey(String keyName, boolean invalidatedByBiometricEnrollment) {
+        try {
+            mKeyStore.load(null);
+            KeyGenParameterSpec.Builder builder = new KeyGenParameterSpec.Builder(keyName,
+                    KeyProperties.PURPOSE_ENCRYPT |
+                            KeyProperties.PURPOSE_DECRYPT)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                    // Require the user to authenticate with a fingerprint to authorize every use
+                    // of the key
+                    .setUserAuthenticationRequired(true)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                builder.setInvalidatedByBiometricEnrollment(invalidatedByBiometricEnrollment);
+            }
+            mKeyGenerator.init(builder.build());
+            mKeyGenerator.generateKey();
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException
+                | CertificateException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean initCipher(Cipher cipher, String keyName) {
+        try {
+            mKeyStore.load(null);
+            SecretKey key = (SecretKey) mKeyStore.getKey(keyName, null);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return true;
+        } catch (KeyPermanentlyInvalidatedException e) {
+            return false;
+        } catch (KeyStoreException | CertificateException | UnrecoverableKeyException | IOException
+                | NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException("Failed to init Cipher", e);
+        }
+    }
+
+    public void onPurchased(boolean withFingerprint,
+                            @Nullable FingerprintManager.CryptoObject cryptoObject) {
+        if (withFingerprint) {
+            assert cryptoObject != null;
+            tryEncrypt(cryptoObject.getCipher());
+        } else {
+            showConfirmation(null);
+        }
+    }
+
+    private void showConfirmation(byte[] encrypted) {
+        findViewById(R.id.textView).setVisibility(View.VISIBLE);
+    }
+
+    private void tryEncrypt(Cipher cipher) {
+        try {
+            byte[] encrypted = cipher.doFinal(SECRET_MESSAGE.getBytes());
+            showConfirmation(encrypted);
+        } catch (BadPaddingException | IllegalBlockSizeException e) {
+            Toast.makeText(this, "Failed to encrypt the data with the generated key. "
+                    + "Retry the purchase", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Failed to encrypt the data with the generated key." + e.getMessage());
+        }
+    }
+
+    private class PurchaseButtonClickListener implements View.OnClickListener{
+        Cipher mCipher;
+        String mKeyName;
+
+        PurchaseButtonClickListener(Cipher cipher, String keyName) {
+            mCipher = cipher;
+            mKeyName = keyName;
+        }
+
+        @Override
+        public void onClick(View view) {
+
+            if (initCipher(mCipher, mKeyName)) {
+                FingerPrintDialog fragment = new FingerPrintDialog();
+                fragment.setCryptoObject(new FingerprintManager.CryptoObject(mCipher));
+                fragment.setStage(FingerPrintDialog.Stage.FINGERPRINT);
+                fragment.show(getFragmentManager(), DIALOG_FRAGMENT_TAG);
+
+                SharedPreferences sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
+                String find_id = sharedPreferences.getString("id", "");
+                findPWRequest(find_id);
+            } else {
+                FingerPrintDialog fragment
+                        = new FingerPrintDialog();
+                fragment.setCryptoObject(new FingerprintManager.CryptoObject(mCipher));
+                fragment.setStage(
+                        FingerPrintDialog.Stage.NEW_FINGERPRINT_ENROLLED);
+                fragment.show(getFragmentManager(), DIALOG_FRAGMENT_TAG);
+            }
+        }
     }
 }

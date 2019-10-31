@@ -87,9 +87,6 @@ public class JoinActivity extends AppCompatActivity {
                             alarmManager.set(AlarmManager.RTC, calendar.getTimeInMillis(), sender);
                     } else    //  API 23 이상
                         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, calendar.getTimeInMillis(), sender);
-
-                    Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(mainIntent);
                     finish();
                     //  회원가입 이후 변환 시간 셋팅
                 } else

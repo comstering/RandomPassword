@@ -83,7 +83,7 @@ public class RandomPasswordService extends Service {
         calendar.setTimeInMillis(System.currentTimeMillis());
         calendar.add(Calendar.SECOND, 1);
         Intent intent = new Intent(this, TimeReceiver.class);
-        PendingIntent sender = PendingIntent.getBroadcast(this, 0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {

@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">RandomPassword</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="application_name">FingerprintDialog</string>
+    <string name="cancel">취소</string>
+    <string name="sign_in">비밀번호 확인</string>
+    <string name="fingerprint_description">지문을 인식해주세요</string>
+    <string name="fingerprint_not_recognized">등록된 지문이 아닙니다</string>
+    <string name="fingerprint_success">지문인식을 완료하였습니다</string>
+    <string name="use_fingerprint_to_authenticate_key" >use_fingerprint_to_authenticate_key</string>
+    <string name="description_fingerprint_icon">Fingerprint icon</string>
 </resources>
