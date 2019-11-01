@@ -101,13 +101,12 @@ public class FingerPrintDialog extends DialogFragment
     private void goToBackup() {
         mStage = Stage.PASSWORD;
         updateStage();
-
         mFingerprintUiHelper.stopListening();
     }
 
     private void updateStage() {
-                mCancelButton.setText(R.string.cancel);
-                mFingerprintContent.setVisibility(View.VISIBLE);
+        mCancelButton.setText(R.string.cancel);
+        mFingerprintContent.setVisibility(View.VISIBLE);
     }
 
     @Override

@@ -31,8 +31,6 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
     }
 
     public boolean isFingerprintAuthAvailable() {
-        // The line below prevents the false positive inspection from Android Studio
-        // noinspection ResourceType
         return mFingerprintManager.isHardwareDetected()
                 && mFingerprintManager.hasEnrolledFingerprints();
     }
@@ -43,8 +41,6 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
         }
         mCancellationSignal = new CancellationSignal();
         mSelfCancelled = false;
-        // The line below prevents the false positive inspection from Android Studio
-        // noinspection ResourceType
         mFingerprintManager
                 .authenticate(cryptoObject, mCancellationSignal, 0 /* flags */, this, null);
         mIcon.setImageResource(R.drawable.ic_fp_40px);
@@ -88,8 +84,7 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
         mIcon.setImageResource(R.drawable.ic_fingerprint_success);
         mErrorTextView.setTextColor(
                 mErrorTextView.getResources().getColor(R.color.success_color, null));
-        mErrorTextView.setText(
-                mErrorTextView.getResources().getString(R.string.fingerprint_success));
+        mErrorTextView.setText(mErrorTextView.getResources().getString(R.string.fingerprint_success));
         mIcon.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -101,8 +96,7 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
     private void showError(CharSequence error) {
         mIcon.setImageResource(R.drawable.ic_fingerprint_error);
         mErrorTextView.setText(error);
-        mErrorTextView.setTextColor(
-                mErrorTextView.getResources().getColor(R.color.warning_color, null));
+        mErrorTextView.setTextColor(mErrorTextView.getResources().getColor(R.color.warning_color, null));
         mErrorTextView.removeCallbacks(mResetErrorTextRunnable);
         mErrorTextView.postDelayed(mResetErrorTextRunnable, ERROR_TIMEOUT_MILLIS);
     }
@@ -110,18 +104,14 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
     private Runnable mResetErrorTextRunnable = new Runnable() {
         @Override
         public void run() {
-            mErrorTextView.setTextColor(
-                    mErrorTextView.getResources().getColor(R.color.hint_color, null));
-            mErrorTextView.setText(
-                    mErrorTextView.getResources().getString(R.string.fingerprint_description));
+            mErrorTextView.setTextColor(mErrorTextView.getResources().getColor(R.color.hint_color, null));
+            mErrorTextView.setText(mErrorTextView.getResources().getString(R.string.fingerprint_description));
             mIcon.setImageResource(R.drawable.ic_fp_40px);
         }
     };
 
     public interface Callback {
-
         void onAuthenticated();
-
         void onError();
     }
 }

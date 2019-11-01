@@ -79,12 +79,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static RequestQueue RequestQueue;    //  Volley 리퀘스트
 
     private void inIt() {
-        idEditText = findViewById(R.id.idEditText);
-        pwEditText = findViewById(R.id.pwEditText);
-        textView = findViewById(R.id.textView);
         loginButton = findViewById(R.id.loginButton);
         joinButton = findViewById(R.id.joinButton);
         findPwButton = findViewById(R.id.findPwButton);
+        idEditText = findViewById(R.id.idEditText);
+        pwEditText = findViewById(R.id.pwEditText);
+        textView = findViewById(R.id.textView);
+        textView.setVisibility(View.GONE);
     }
     @Override
     public void onClick(View v) {
@@ -107,12 +108,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         inIt();    //  초기화
-        textView.setVisibility(View.GONE);
+        fingerprint();    //  지문인식
 
-        fingerprint();
-
-        loginButton.setOnClickListener(this);
-        joinButton.setOnClickListener(this);
+        loginButton.setOnClickListener(this);    //  로그인 버튼
+        joinButton.setOnClickListener(this);    //  회원가입 버튼
+        findPwButton.setOnClickListener(new PurchaseButtonClickListener(defaultCipher, DEFAULT_KEY_NAME));    //  비밀번호 get 버튼 + 지문인식
     }
 
     private void loginRequest(final String id, final String pwd) {    //  로그인 리퀘스트
@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         RequestQueue.add(request);
     }
 
-    public void fingerprint() {
+    private void fingerprint() {    //  지문인식
         try {
             mKeyStore = KeyStore.getInstance("AndroidKeyStore");
         } catch (KeyStoreException e) {
@@ -237,18 +237,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         createKey(DEFAULT_KEY_NAME, true);
         createKey(KEY_NAME_NOT_INVALIDATED, false);
         findPwButton.setEnabled(true);
-        findPwButton.setOnClickListener(new PurchaseButtonClickListener(defaultCipher, DEFAULT_KEY_NAME));    //  비밀번호 get 버튼
+
+        //  참고 : GitHub googlearchive / android-FingerprintDialog   https://github.com/googlearchive/android-FingerprintDialog
     }
 
-    public void createKey(String keyName, boolean invalidatedByBiometricEnrollment) {
+    private void createKey(String keyName, boolean invalidatedByBiometricEnrollment) {
         try {
             mKeyStore.load(null);
             KeyGenParameterSpec.Builder builder = new KeyGenParameterSpec.Builder(keyName,
-                    KeyProperties.PURPOSE_ENCRYPT |
-                            KeyProperties.PURPOSE_DECRYPT)
+                    KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                     .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                    // Require the user to authenticate with a fingerprint to authorize every use
-                    // of the key
                     .setUserAuthenticationRequired(true)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -276,8 +274,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void onPurchased(boolean withFingerprint,
-                            @Nullable FingerprintManager.CryptoObject cryptoObject) {
+    public void onPurchased(boolean withFingerprint, @Nullable FingerprintManager.CryptoObject cryptoObject) {
         if (withFingerprint) {
             assert cryptoObject != null;
             tryEncrypt(cryptoObject.getCipher());
@@ -312,7 +309,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onClick(View view) {
-
             if (initCipher(mCipher, mKeyName)) {
                 SharedPreferences sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
                 String find_id = sharedPreferences.getString("id", "");
@@ -327,11 +323,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     findPWRequest(find_id);
                 }
             } else {
-                FingerPrintDialog fragment
-                        = new FingerPrintDialog();
+                FingerPrintDialog fragment = new FingerPrintDialog();
                 fragment.setCryptoObject(new FingerprintManager.CryptoObject(mCipher));
-                fragment.setStage(
-                        FingerPrintDialog.Stage.NEW_FINGERPRINT_ENROLLED);
+                fragment.setStage(FingerPrintDialog.Stage.NEW_FINGERPRINT_ENROLLED);
                 fragment.show(getFragmentManager(), DIALOG_FRAGMENT_TAG);
             }
         }
