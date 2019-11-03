@@ -119,7 +119,6 @@ public class FingerPrintDialog extends DialogFragment
     @Override
     public void onAuthenticated() {
         mActivity.onPurchased(true /* withFingerprint */, mCryptoObject);
-        Toast.makeText(mActivity.getApplicationContext(), "비밀번호를 가져왔습니다.", Toast.LENGTH_LONG).show();
         dismiss();
     }
 

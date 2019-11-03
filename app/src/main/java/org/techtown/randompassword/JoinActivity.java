@@ -53,7 +53,12 @@ public class JoinActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String join_id = idEditText.getText().toString();
                 String join_pwd = pwEditText.getText().toString();
-                makeRequest(join_id, join_pwd);
+                if(join_id.length() == 0)    //  아이디를 입력하지 않았을 경우
+                    Toast.makeText(getApplicationContext(), "아이디를 입력해주세요", Toast.LENGTH_LONG).show();
+                else if(join_pwd.length() == 0)    //  아이디를 입력하였지만 비밀번호를 입력하지 않았을 경우
+                    Toast.makeText(getApplicationContext(), "비밀번호를 입력해 주세요", Toast.LENGTH_LONG).show();
+                else
+                    makeRequest(join_id, join_pwd);
             }
         });
     }

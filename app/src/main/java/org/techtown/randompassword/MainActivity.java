@@ -93,7 +93,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.loginButton:    //  로그인 버튼
                 String login_id = idEditText.getText().toString();
                 String login_pwd = pwEditText.getText().toString();
-                loginRequest(login_id, login_pwd);
+                if(login_id.length() == 0)    //  아이디를 입력하지 않았을 경우
+                    Toast.makeText(getApplicationContext(), "아이디를 입력해주세요", Toast.LENGTH_LONG).show();
+                else if(login_pwd.length() == 0)    //  비밀번호를 입력하지 않았을 경우
+                    Toast.makeText(getApplicationContext(), "비밀번호를 입력해주세요", Toast.LENGTH_LONG).show();
+                else
+                    loginRequest(login_id, login_pwd);
                 break;
             case R.id.joinButton:    //  회원가입 버튼
                 Intent joinIntent = new Intent(getApplicationContext(), JoinActivity.class);
@@ -190,6 +195,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(RequestQueue == null)
             RequestQueue = Volley.newRequestQueue(getApplicationContext());
 
+        findViewById(R.id.textView).setVisibility(View.VISIBLE);    //  비밀번호 textView 보여주기
+        Toast.makeText(getApplicationContext(), "비밀번호를 가져왔습니다.", Toast.LENGTH_LONG).show();
+
         request.setShouldCache(false);
         RequestQueue.add(request);
     }
@@ -283,8 +291,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void showConfirmation(byte[] encrypted) {
-        findViewById(R.id.textView).setVisibility(View.VISIBLE);
+    private void showConfirmation(byte[] encrypted) {    //  지문인식이 완료되었을경우
+        SharedPreferences sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
+        String find_id = sharedPreferences.getString("id", "");
+        findPWRequest(find_id);    //  비밀번호 가져오기
     }
 
     private void tryEncrypt(Cipher cipher) {
@@ -312,15 +322,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (initCipher(mCipher, mKeyName)) {
                 SharedPreferences sharedPreferences = getSharedPreferences("user", MODE_PRIVATE);
                 String find_id = sharedPreferences.getString("id", "");
-                if(find_id.equalsIgnoreCase("")||find_id.length()==0)
+                if(find_id.equalsIgnoreCase("")||find_id.length()==0)    //  회원가입이 되어있지 않을 경우
                     Toast.makeText(getApplicationContext(), "회원가입이 되어있지 않습니다.", Toast.LENGTH_LONG).show();
-                else {
+                else {    //  회원가입 되어있을 경우 지문인식
                     FingerPrintDialog fragment = new FingerPrintDialog();
                     fragment.setCryptoObject(new FingerprintManager.CryptoObject(mCipher));
                     fragment.setStage(FingerPrintDialog.Stage.FINGERPRINT);
                     fragment.show(getFragmentManager(), DIALOG_FRAGMENT_TAG);
-
-                    findPWRequest(find_id);
                 }
             } else {
                 FingerPrintDialog fragment = new FingerPrintDialog();
