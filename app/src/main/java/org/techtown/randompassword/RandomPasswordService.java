@@ -102,7 +102,7 @@ public class RandomPasswordService extends Service {
     }
 
     private void makeRequest(final String id, final String pwd) {    //  서버 비밀번호 변경 리퀘스트
-        String url = "http://comstering.synology.me:7070/RandomPassword/PhoneConnection.jsp";
+        String url = "http://tomcat.comstering.synology.me/RandomPassword/PhoneConnection.jsp";
 
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override

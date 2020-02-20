@@ -64,7 +64,7 @@ public class JoinActivity extends AppCompatActivity {
     }
 
     public void makeRequest(final String id, final String pwd) {
-        String url = "http://comstering.synology.me:7070/RandomPassword/PhoneConnection.jsp";
+        String url = "http://tomcat.comstering.synology.me/RandomPassword/PhoneConnection.jsp";
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
