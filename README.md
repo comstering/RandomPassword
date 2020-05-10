@@ -6,14 +6,10 @@
 
 * 언어
 
-    * HTML
     * JAVA
-    * MySQL
 
 * 도구
-    * Eclipse
-    * phpMyAdmin
-    * Tomcat
+    * Android Studio
 ----------------------------------------------
 ## 1. 기존프로세스
 ![슬라이드4](https://user-images.githubusercontent.com/53170968/81501680-a3812400-9314-11ea-8734-176f82dca397.JPG)
